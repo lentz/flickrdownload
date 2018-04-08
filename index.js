@@ -122,27 +122,17 @@ async function downloadSet(flickr, photoset) {
   console.log(`${photos.length}/${photoset.photos} photos downloaded for album '${photoset.title._content}'`);
 }
 
-function run() {
-  return new Promise((resolve, reject) => {
-    Flickr.authenticate(flickrOptions, async (authErr, flickr) => {
-      try {
-        if (authErr) { throw authErr; }
-        const photosets = await getPhotosets(flickr);
-        for (const photoset of photosets) { // eslint-disable-line
-          await downloadSet(flickr, photoset);
-        }
-      } catch (err) {
-        return reject(err);
-      }
-      return resolve();
-    });
-  });
-}
-
-run().then(() => {
+Flickr.authenticate(flickrOptions, async (authErr, flickr) => {
+  try {
+    if (authErr) { throw authErr; }
+    const photosets = await getPhotosets(flickr);
+    for (const photoset of photosets) { // eslint-disable-line
+      await downloadSet(flickr, photoset);
+    }
+  } catch (err) {
+    console.error('Error:', err.message);
+    return process.exit(1);
+  }
   console.log('Downloading complete!');
-  process.exit();
-}).catch((err) => {
-  console.error(err.message);
-  process.exit(1);
+  return process.exit();
 });
