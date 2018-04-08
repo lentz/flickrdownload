@@ -2,16 +2,24 @@
 
 require('dotenv').config();
 const axios = require('axios');
+const program = require('commander');
 const debug = require('debug')('flickrdownloader');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
 const path = require('path');
 const Flickr = require('flickrapi');
 
+program
+  .name('flickrdownloader')
+  .description('Download albums from a Flickr account')
+  .version('1.0.0')
+  .option('--per-page <n>', 'Number of albums to download at once', parseInt)
+  .option('--page <n>', 'Page of albums to download', parseInt)
+  .parse(process.argv);
+
 const downloadPath = process.env.DOWNLOAD_PATH;
 const userId = process.env.USER_ID;
-const perPage = process.argv[2];
-const page = process.argv[3];
+const { perPage, page } = program;
 const baseOpts = { user_id: userId, authenticated: true };
 
 const flickrOptions = {
