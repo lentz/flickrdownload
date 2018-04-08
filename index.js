@@ -5,6 +5,7 @@ const axios = require('axios');
 const program = require('commander');
 const debug = require('debug')('flickrdownloader');
 const fs = require('fs');
+const glob = require('glob');
 const mkdirp = require('mkdirp');
 const path = require('path');
 const Flickr = require('flickrapi');
@@ -43,18 +44,22 @@ async function downloadUrl(url, albumPath) {
       if (response.headers['content-disposition']) {
         [, filename] = response.headers['content-disposition'].split('=');
       }
-      response.data.pipe(fs.createWriteStream(`${albumPath}/${filename}`));
+      response.data.pipe(fs.createWriteStream(path.join(albumPath, filename)));
       response.data.on('end', () => resolve());
-      response.data.on('error', err => reject(err));
+      return response.data.on('error', err => reject(err));
     } catch (err) {
-      reject(err);
+      return reject(err);
     }
   });
 }
 
 async function downloadPhoto(flickr, photo, albumPath) {
   return new Promise((resolve, reject) => {
-    flickr.photos.getSizes(
+    if (glob.sync(path.join(albumPath, `${photo.id}*`)).length) {
+      debug(`Photo ID ${photo.id} already exists`);
+      return resolve();
+    }
+    return flickr.photos.getSizes(
       { ...baseOpts, photo_id: photo.id },
       async (err, sizes) => {
         let videoOriginal;
