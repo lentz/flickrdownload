@@ -98,14 +98,24 @@ function getPhotosets(flickr) {
   });
 }
 
-// TODO: handle multiple pages
-function getPhotosForSet(flickr, photoset) {
+function getPhotosForSet(flickr, photoset, photoPage = 1) {
   return new Promise((resolve, reject) => {
     flickr.photosets.getPhotos(
-      { ...baseOpts, page: 1, photoset_id: photoset.id },
-      (err, result) => {
-        if (err) { return reject(err); }
-        return resolve(result.photoset.photo);
+      { ...baseOpts, page: photoPage, photoset_id: photoset.id },
+      async (flickrErr, result) => {
+        try {
+          if (flickrErr) { throw flickrErr; }
+          if (photoPage < result.photoset.pages) {
+            const nextPage = await getPhotosForSet(flickr, photoset, photoPage + 1);
+            return resolve([
+              ...result.photoset.photo,
+              ...nextPage,
+            ]);
+          }
+          return resolve(result.photoset.photo);
+        } catch (err) {
+          return reject(err);
+        }
       },
     );
   });
@@ -115,11 +125,11 @@ async function downloadSet(flickr, photoset) {
   const photos = await getPhotosForSet(flickr, photoset);
   const albumPath = `${downloadPath}/${photoset.title._content}`;
   mkdirp.sync(albumPath);
-  console.log(`Downloading photos in '${photoset.title._content}'...`);
+  console.log(`Found ${photos.length} photos in '${photoset.title._content}'...`);
   for (const photo of photos) { // eslint-disable-line
     await downloadPhoto(flickr, photo, albumPath);
   }
-  console.log(`${photos.length}/${photoset.photos} photos downloaded for album '${photoset.title._content}'`);
+  console.log(`${photos.length} photos downloaded for album '${photoset.title._content}'`);
 }
 
 Flickr.authenticate(flickrOptions, async (authErr, flickr) => {
