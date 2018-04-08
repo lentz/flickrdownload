@@ -30,7 +30,7 @@ const flickrOptions = {
   access_token_secret: process.env.ACCESS_TOKEN_SECRET,
 };
 
-async function download(url, albumPath) {
+async function downloadUrl(url, albumPath) {
   return new Promise(async (resolve, reject) => {
     try {
       debug(`Downloading ${url} to ${albumPath}`);
@@ -52,7 +52,7 @@ async function download(url, albumPath) {
   });
 }
 
-async function getPhotoInfo(flickr, photo, albumPath) {
+async function downloadPhoto(flickr, photo, albumPath) {
   return new Promise((resolve, reject) => {
     flickr.photos.getSizes(
       { ...baseOpts, photo_id: photo.id },
@@ -68,15 +68,15 @@ async function getPhotoInfo(flickr, photo, albumPath) {
           original = sizes.sizes.size.find(size => size.label === 'Original');
 
           if (videoOriginal) {
-            await download(videoOriginal.source, albumPath);
+            await downloadUrl(videoOriginal.source, albumPath);
           } else {
-            await download(original.source, albumPath);
+            await downloadUrl(original.source, albumPath);
           }
           return resolve();
         } catch (downloadErr) {
           if (videoOriginal && downloadErr.response.status === 404) {
             try {
-              await download(siteMP4.source, albumPath);
+              await downloadUrl(siteMP4.source, albumPath);
               return resolve();
             } catch (videoRetryErr) {
               return reject(videoRetryErr);
@@ -117,7 +117,7 @@ async function downloadSet(flickr, photoset) {
   mkdirp.sync(albumPath);
   console.log(`Downloading photos in '${photoset.title._content}'...`);
   for (const photo of photos) { // eslint-disable-line
-    await getPhotoInfo(flickr, photo, albumPath);
+    await downloadPhoto(flickr, photo, albumPath);
   }
   console.log(`${photos.length}/${photoset.photos} photos downloaded for album '${photoset.title._content}'`);
 }
