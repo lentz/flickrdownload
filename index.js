@@ -145,7 +145,7 @@ Flickr.authenticate(flickrOptions, async (authErr, flickr) => {
       await downloadSet(flickr, photoset);
     }
   } catch (err) {
-    console.error('Error:', err.message);
+    console.error(err.stack);
     return process.exit(1);
   }
   console.log('Downloading complete!');
