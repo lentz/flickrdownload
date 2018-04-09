@@ -11,7 +11,7 @@ const path = require('path');
 const Flickr = require('flickrapi');
 
 program
-  .name('flickrdownloader')
+  .name('flickrdownload')
   .description('Download albums from a Flickr account')
   .version('1.0.0')
   .option('--per-page <n>', 'Number of albums to download at once', parseInt)

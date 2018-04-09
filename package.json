@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lentz/flickrdownloader.git"
+    "url": "https://github.com/lentz/flickrdownload.git"
   },
   "engine": {
     "node": ">=8.9.1"
