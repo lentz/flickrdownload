@@ -127,14 +127,14 @@ function getPhotosForSet(flickr, photoset, photoPage = 1) {
 }
 
 async function downloadSet(flickr, photoset) {
+  console.log(`Getting photos in '${photoset.title._content}'`);
   const photos = await getPhotosForSet(flickr, photoset);
   const albumPath = `${downloadPath}/${photoset.title._content}`;
   mkdirp.sync(albumPath);
-  console.log(`Found ${photos.length} photos in '${photoset.title._content}'...`);
-  for (const photo of photos) { // eslint-disable-line
+  for (const [index, photo] of photos.entries()) { // eslint-disable-line
     await downloadPhoto(flickr, photo, albumPath);
+    process.stdout.write(`Downloaded ${index + 1}/${photos.length} photos from '${photoset.title._content}'\r`);
   }
-  console.log(`${photos.length} photos downloaded for album '${photoset.title._content}'`);
 }
 
 Flickr.authenticate(flickrOptions, async (authErr, flickr) => {
@@ -145,9 +145,9 @@ Flickr.authenticate(flickrOptions, async (authErr, flickr) => {
       await downloadSet(flickr, photoset);
     }
   } catch (err) {
-    console.error(err.stack);
+    console.error(`\n${err.stack}`);
     return process.exit(1);
   }
-  console.log('Downloading complete!');
+  console.log('\nDownloading complete!');
   return process.exit();
 });
