@@ -32,24 +32,21 @@ const flickrOptions = {
 };
 
 async function downloadUrl(url, albumPath) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      debug(`Downloading ${url} to ${albumPath}`);
-      const response = await axios({
-        url,
-        responseType: 'stream',
-        timeout: 20000,
-      });
-      let filename = path.basename(url);
-      if (response.headers['content-disposition']) {
-        [, filename] = response.headers['content-disposition'].split('=');
-      }
-      response.data.pipe(fs.createWriteStream(path.join(albumPath, filename)));
-      response.data.on('end', () => resolve());
-      return response.data.on('error', err => reject(err));
-    } catch (err) {
-      return reject(err);
-    }
+  debug(`Downloading ${url} to ${albumPath}`);
+  const response = await axios({
+    url,
+    responseType: 'stream',
+    timeout: 20000,
+  });
+  let filename = path.basename(url);
+  if (response.headers['content-disposition']) {
+    [, filename] = response.headers['content-disposition'].split('=');
+  }
+
+  response.data.pipe(fs.createWriteStream(path.join(albumPath, filename)));
+  return new Promise((resolve, reject) => {
+    response.data.on('end', resolve);
+    response.data.on('error', reject);
   });
 }
 
@@ -68,9 +65,9 @@ async function downloadPhoto(flickr, photo, albumPath) {
 
         try {
           if (err) { throw err; }
-          videoOriginal = sizes.sizes.size.find(size => size.label === 'Video Original');
-          siteMP4 = sizes.sizes.size.find(size => size.label === 'Site MP4');
-          original = sizes.sizes.size.find(size => size.label === 'Original');
+          videoOriginal = sizes.sizes.size.find((size) => size.label === 'Video Original');
+          siteMP4 = sizes.sizes.size.find((size) => size.label === 'Site MP4');
+          original = sizes.sizes.size.find((size) => size.label === 'Original');
 
           if (videoOriginal) {
             await downloadUrl(videoOriginal.source, albumPath);
