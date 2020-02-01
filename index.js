@@ -6,7 +6,7 @@ const program = require('commander');
 const debug = require('debug')('flickrdownloader');
 const fs = require('fs');
 const glob = require('glob');
-const mkdirp = require('mkdirp');
+const { mkdirSync } = require('fs');
 const path = require('path');
 const Flickr = require('flickrapi');
 
@@ -127,7 +127,7 @@ async function downloadSet(flickr, photoset) {
   console.log(`Getting photos in '${photoset.title._content}'`);
   const photos = await getPhotosForSet(flickr, photoset);
   const albumPath = `${downloadPath}/${photoset.title._content}`;
-  mkdirp.sync(albumPath);
+  mkdirSync(albumPath, { recursive: true });
   for (const [index, photo] of photos.entries()) { // eslint-disable-line
     await downloadPhoto(flickr, photo, albumPath);
     process.stdout.write(`Downloaded ${index + 1}/${photos.length} photos from '${photoset.title._content}'\r`);
