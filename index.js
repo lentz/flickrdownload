@@ -64,8 +64,12 @@ async function downloadPhoto(flickr, photo, albumPath) {
         let original;
 
         try {
-          if (err) { throw err; }
-          videoOriginal = sizes.sizes.size.find((size) => size.label === 'Video Original');
+          if (err) {
+            throw err;
+          }
+          videoOriginal = sizes.sizes.size.find(
+            (size) => size.label === 'Video Original',
+          );
           siteMP4 = sizes.sizes.size.find((size) => size.label === 'Site MP4');
           original = sizes.sizes.size.find((size) => size.label === 'Original');
 
@@ -93,10 +97,15 @@ async function downloadPhoto(flickr, photo, albumPath) {
 
 function getPhotosets(flickr) {
   return new Promise((resolve, reject) => {
-    flickr.photosets.getList({ ...baseOpts, page, per_page: perPage }, (err, result) => {
-      if (err) { return reject(err); }
-      return resolve(result.photosets.photoset);
-    });
+    flickr.photosets.getList(
+      { ...baseOpts, page, per_page: perPage },
+      (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(result.photosets.photoset);
+      },
+    );
   });
 }
 
@@ -106,13 +115,16 @@ function getPhotosForSet(flickr, photoset, photoPage = 1) {
       { ...baseOpts, page: photoPage, photoset_id: photoset.id },
       async (flickrErr, result) => {
         try {
-          if (flickrErr) { throw flickrErr; }
+          if (flickrErr) {
+            throw flickrErr;
+          }
           if (photoPage < result.photoset.pages) {
-            const nextPage = await getPhotosForSet(flickr, photoset, photoPage + 1);
-            return resolve([
-              ...result.photoset.photo,
-              ...nextPage,
-            ]);
+            const nextPage = await getPhotosForSet(
+              flickr,
+              photoset,
+              photoPage + 1,
+            );
+            return resolve([...result.photoset.photo, ...nextPage]);
           }
           return resolve(result.photoset.photo);
         } catch (err) {
@@ -128,17 +140,25 @@ async function downloadSet(flickr, photoset) {
   const photos = await getPhotosForSet(flickr, photoset);
   const albumPath = `${downloadPath}/${photoset.title._content}`;
   mkdirSync(albumPath, { recursive: true });
-  for (const [index, photo] of photos.entries()) { // eslint-disable-line
+  // eslint-disable-next-line no-restricted-syntax
+  for (const [index, photo] of photos.entries()) {
     await downloadPhoto(flickr, photo, albumPath);
-    process.stdout.write(`Downloaded ${index + 1}/${photos.length} photos from '${photoset.title._content}'\r`);
+    process.stdout.write(
+      `Downloaded ${index + 1}/${photos.length} photos from '${
+        photoset.title._content
+      }'\r`,
+    );
   }
 }
 
 Flickr.authenticate(flickrOptions, async (authErr, flickr) => {
   try {
-    if (authErr) { throw authErr; }
+    if (authErr) {
+      throw authErr;
+    }
     const photosets = await getPhotosets(flickr);
-    for (const photoset of photosets) { // eslint-disable-line
+    // eslint-disable-next-line no-restricted-syntax
+    for (const photoset of photosets) {
       await downloadSet(flickr, photoset);
     }
   } catch (err) {

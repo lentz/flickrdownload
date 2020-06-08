@@ -1,10 +1,13 @@
 # flickrdownload
+
 Node module that downloads albums from a Flickr account
 
 ## Installation
+
 `npm install flickrdownload`
 
 ## Usage
+
 If you don't already have one, request a Flickr API key and secret from
 https://www.flickr.com/services/apps/create/noncommercial/.
 
@@ -24,6 +27,7 @@ Each album will be downloaded to it's own folder in `DOWNLOAD_PATH`.
 Both photos and videos are supported.
 
 ## Debugging
+
 flickrdownload uses the debug module to support verbose debugging output
 while running. To enable, add an environment variable called `DEBUG` with a
 value of `flickrdownload` when running:
